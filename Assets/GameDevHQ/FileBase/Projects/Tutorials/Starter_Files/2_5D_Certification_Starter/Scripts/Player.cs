@@ -14,13 +14,18 @@ public class Player : MonoBehaviour
     private bool _rolling = false;
     private bool _onLedge = false;
     private Ledge _currentLedge;
+    [SerializeField] private ToxicityBar _toxicityBar;
+    [SerializeField] private int _medicineAmount;
     
-
-
     void Start()
     {
         _controller = GetComponent<CharacterController>();
         _anim = GetComponentInChildren<Animator>();
+
+        if(_toxicityBar == null)
+        {
+            Debug.Log("Toxicity Bar is Null");
+        }
     }
 
     
@@ -32,6 +37,11 @@ public class Player : MonoBehaviour
             {
                 _anim.SetTrigger("ClimbUp");
             }
+        }
+
+        if (Input.GetKey(KeyCode.RightShift))
+        {
+            _toxicityBar.ToxicExposure(1);
         }
 
         CalculateMovement();
@@ -120,7 +130,16 @@ public class Player : MonoBehaviour
         _rolling = false;
     }
 
-   
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Medicine")
+        {
+            _toxicityBar.ToxicCure(_medicineAmount);
+            Destroy(other.gameObject);
+        }
+    }
+
+
 }
 
 
