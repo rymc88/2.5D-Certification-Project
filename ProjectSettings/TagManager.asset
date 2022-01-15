@@ -7,6 +7,9 @@ TagManager:
   - LedgeGrabChecker
   - Elevator
   - Medicine
+  - Ladder
+  - LadderEnter
+  - LadderBottom
   layers:
   - Default
   - TransparentFX

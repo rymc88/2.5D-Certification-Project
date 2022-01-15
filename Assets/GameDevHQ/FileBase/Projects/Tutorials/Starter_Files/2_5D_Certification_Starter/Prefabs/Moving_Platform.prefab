@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7967673992394257045}
   m_Layer: 0
-  m_Name: Elevator
+  m_Name: Moving_Platform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -108,7 +108,7 @@ GameObject:
   - component: {fileID: 7967673993124072056}
   - component: {fileID: 7967673993124072061}
   m_Layer: 0
-  m_Name: Elevator_Platform
+  m_Name: Platform
   m_TagString: Elevator
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
