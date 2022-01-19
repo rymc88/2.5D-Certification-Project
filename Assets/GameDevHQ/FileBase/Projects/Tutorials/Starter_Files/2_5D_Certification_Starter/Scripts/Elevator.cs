@@ -21,13 +21,14 @@ public class Elevator : MonoBehaviour
         {
             transform.position = Vector3.MoveTowards(transform.position, _wayPoints[_targetID].transform.position, _speed * Time.deltaTime);
         }
-        
-        if(transform.position == _wayPoints[_targetID].transform.position)
+
+        if (transform.position == _wayPoints[_targetID].transform.position)
         {
             _targetID = (_targetID + 1) % _wayPoints.Length;
-            StartCoroutine(ElevatorDelay());      
+            StartCoroutine(ElevatorDelay());
         }
-        
+
+
     }
 
     IEnumerator ElevatorDelay()

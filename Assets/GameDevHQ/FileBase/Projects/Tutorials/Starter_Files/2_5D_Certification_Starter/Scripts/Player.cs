@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float _climbSpeed;
     private GameObject _ledgeGrabChecker;
     private GameObject _ladderEnterChecker;
+    private bool _movingLeft = false;
+    private bool _jumpingOver = false;
     
     
     
@@ -67,7 +69,11 @@ public class Player : MonoBehaviour
             _toxicityBar.ToxicExposure(1);
         }
 
-        CalculateMovement();
+        if (!_jumpingOver)
+        {
+            CalculateMovement();
+        }
+        
     }
 
     void CalculateMovement()
@@ -84,10 +90,12 @@ public class Player : MonoBehaviour
             if (_direction.x > 0)
             {
                 facing.y = 90;
+                _movingLeft = false;
             }
             else if (_direction.x < 0)
             {
                 facing.y = -90;
+                _movingLeft = true;
             }
 
             transform.localEulerAngles = facing;
@@ -122,15 +130,15 @@ public class Player : MonoBehaviour
                 }
                 
             }
-
+            
         }
 
         if(_climbingLadder == false)
         {
             _direction.y -= _gravity * Time.deltaTime;
         }
-       
 
+        
         _controller.Move(_direction * Time.deltaTime);
         
     }
@@ -240,6 +248,32 @@ public class Player : MonoBehaviour
         _climbingLadder = false;
         _anim.SetBool("ClimbLadder", false);
     }
+
+    public void JumpOver()
+    {
+        _jumpingOver = true;
+        _controller.enabled = false;
+        _anim.SetBool("JumpOver",true);
+        
+    }
+
+    public void JumpOverFinished()
+    {
+        _anim.SetBool("JumpOver", false);
+        _jumpingOver = false;
+        _controller.enabled = true;
+
+        if(_movingLeft == true)
+        {
+            transform.position -= new Vector3(15.0f, 0f, 0f);
+        }
+        else
+        {
+            transform.position += new Vector3(15.0f, 0f, 0f);
+        }
+        
+    }
+    
 }
 
 

@@ -17,7 +17,25 @@ public class Ladder : MonoBehaviour
                 player.ClimbLadder();
             }
         }
+        
     }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Container")
+        {
+            var horizontalInput = Input.GetAxisRaw("Horizontal");
+
+            if (Input.GetKeyDown(KeyCode.Space) && horizontalInput !=0)
+            {
+                var player = GetComponentInParent<Player>();
+
+                player.JumpOver();
+            }
+
+        }
+    }
+
 
     private void OnTriggerExit(Collider other)
     {
