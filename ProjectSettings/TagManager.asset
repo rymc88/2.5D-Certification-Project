@@ -12,6 +12,7 @@ TagManager:
   - LadderBottom
   - Container
   - LadderEnterChecker
+  - MovingBox
   layers:
   - Default
   - TransparentFX

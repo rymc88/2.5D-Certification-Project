@@ -22,6 +22,13 @@ public class Player : MonoBehaviour
     private GameObject _ladderEnterChecker;
     private bool _movingLeft = false;
     private bool _jumpingOver = false;
+    private float _lastY;
+    [SerializeField] private float _fallingThreshold;
+    private bool _falling = false;
+    [SerializeField] private float _pushPower;
+    [SerializeField] private float _horizontalInput;
+
+    
     
     
     
@@ -31,6 +38,8 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _ledgeGrabChecker = GameObject.Find("Ledge_Grab_Checker");
         _ladderEnterChecker = GameObject.Find("Ladder_Enter_Checker");
+
+        _lastY = transform.position.y;
 
         if(_ladderEnterChecker == null)
         {
@@ -51,12 +60,28 @@ public class Player : MonoBehaviour
     
     void Update()
     {
+        IsFalling();
+
+        if(_falling == true)
+        {
+            Falling();
+       
+        }
+        else
+        {
+            Landed();
+        }
+
         if (_onLedge == true)
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
                 _anim.SetTrigger("ClimbUp");
             }
+        }
+        else
+        {
+
         }
 
         if (_climbingLadder == true)
@@ -80,9 +105,9 @@ public class Player : MonoBehaviour
     {
         if (_controller.isGrounded == true)
         {
-            float horizontalInput = Input.GetAxisRaw("Horizontal");
-            _direction = new Vector3(horizontalInput, 0, 0) * _speed;
-            _anim.SetFloat("Speed", Mathf.Abs(horizontalInput));
+            _horizontalInput = Input.GetAxisRaw("Horizontal");
+            _direction = new Vector3(_horizontalInput, 0, 0) * _speed;
+            _anim.SetFloat("Speed", Mathf.Abs(_horizontalInput));
             _anim.SetBool("Jumping", false);
 
             Vector3 facing = transform.localEulerAngles;
@@ -100,7 +125,7 @@ public class Player : MonoBehaviour
 
             transform.localEulerAngles = facing;
 
-            if(horizontalInput != 0 && Input.GetKeyDown(KeyCode.LeftShift))
+            if(_horizontalInput != 0 && Input.GetKeyDown(KeyCode.LeftShift))
             {
                 _rolling = true;
                 _anim.SetTrigger("RollForward");
@@ -119,7 +144,7 @@ public class Player : MonoBehaviour
                 _direction.y += _jumpHeight;
                 
 
-                if(horizontalInput == 0)
+                if(_horizontalInput == 0)
                 {
                     _anim.SetTrigger("IdleJump");
                 }
@@ -140,6 +165,35 @@ public class Player : MonoBehaviour
 
         
         _controller.Move(_direction * Time.deltaTime);
+        
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+
+        if (_horizontalInput != 0 && Input.GetKey(KeyCode.Z))
+        {
+            if (hit.transform.tag == "MovingBox")
+            {
+                Rigidbody rigidbody = hit.collider.GetComponent<Rigidbody>();
+
+                if (rigidbody == null)
+                {
+                    Debug.Log("No Rigidbody on Moving Box");
+                    return;
+                }
+
+                Vector3 pushDir = new Vector3(_horizontalInput, 0, 0);
+                rigidbody.velocity = pushDir * _pushPower;
+                _anim.SetBool("Pushing", true);
+
+            }
+        }
+        else
+        {
+            _anim.SetBool("Pushing", false);
+        }
+
         
     }
 
@@ -178,6 +232,7 @@ public class Player : MonoBehaviour
         _anim.SetBool("GrabLedge", true);
         _anim.SetFloat("Speed", 0f);
         _anim.SetBool("Jumping", false);
+        _anim.SetBool("Falling", false);
 
         _onLedge = true;
 
@@ -273,7 +328,43 @@ public class Player : MonoBehaviour
         }
         
     }
-    
+
+    public void IsFalling()
+    {
+        float distanceSinceLastFrame = (transform.position.y - _lastY) * Time.deltaTime;
+        _lastY = transform.position.y;
+       
+
+        if (distanceSinceLastFrame < _fallingThreshold)
+        {
+            _falling = true;
+        }
+        else
+        {
+            _falling = false;
+        }
+    }
+
+    public void Falling()
+    {
+        _ledgeGrabChecker.SetActive(false);
+        _anim.SetBool("Falling",true);
+        
+    }
+
+    public void Landed()
+    {
+        _ledgeGrabChecker.SetActive(true);
+        _anim.SetBool("Falling", false);
+        _anim.SetBool("Landed",true);
+    }
+
+    public void Pushing()
+    {
+        _anim.SetBool("Pushing", true);
+    }
+
+
 }
 
 
