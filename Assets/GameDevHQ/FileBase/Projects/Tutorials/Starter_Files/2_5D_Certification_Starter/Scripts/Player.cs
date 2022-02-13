@@ -27,10 +27,9 @@ public class Player : MonoBehaviour
     private bool _falling = false;
     [SerializeField] private float _pushPower;
     [SerializeField] private float _horizontalInput;
-
-    
-    
-    
+    private bool _canWallJump;
+    private Vector3 _wallSurfaceNormal;
+    private Vector3 _facing;
     
     void Start()
     {
@@ -38,6 +37,8 @@ public class Player : MonoBehaviour
         _anim = GetComponentInChildren<Animator>();
         _ledgeGrabChecker = GameObject.Find("Ledge_Grab_Checker");
         _ladderEnterChecker = GameObject.Find("Ladder_Enter_Checker");
+
+        _facing = transform.eulerAngles;
 
         _lastY = transform.position.y;
 
@@ -79,10 +80,7 @@ public class Player : MonoBehaviour
                 _anim.SetTrigger("ClimbUp");
             }
         }
-        else
-        {
-
-        }
+     
 
         if (_climbingLadder == true)
         {
@@ -105,25 +103,26 @@ public class Player : MonoBehaviour
     {
         if (_controller.isGrounded == true)
         {
+            _canWallJump = false;
             _horizontalInput = Input.GetAxisRaw("Horizontal");
             _direction = new Vector3(_horizontalInput, 0, 0) * _speed;
             _anim.SetFloat("Speed", Mathf.Abs(_horizontalInput));
             _anim.SetBool("Jumping", false);
 
-            Vector3 facing = transform.localEulerAngles;
+            //Vector3 facing = transform.localEulerAngles;
 
             if (_direction.x > 0)
             {
-                facing.y = 90;
+                _facing.y = 90;
                 _movingLeft = false;
             }
             else if (_direction.x < 0)
             {
-                facing.y = -90;
+                _facing.y = -90;
                 _movingLeft = true;
             }
 
-            transform.localEulerAngles = facing;
+            transform.localEulerAngles = _facing;
 
             if(_horizontalInput != 0 && Input.GetKeyDown(KeyCode.LeftShift))
             {
@@ -139,7 +138,7 @@ public class Player : MonoBehaviour
                 _anim.SetBool("Jumping", _jumping);
             }
 
-            if (Input.GetKeyDown(KeyCode.Space) && _rolling == false)
+            if (Input.GetKeyDown(KeyCode.Space) && _rolling == false && _canWallJump == false)
             {
                 _direction.y += _jumpHeight;
                 
@@ -155,6 +154,7 @@ public class Player : MonoBehaviour
                 }
                 
             }
+
             
         }
 
@@ -163,7 +163,28 @@ public class Player : MonoBehaviour
             _direction.y -= _gravity * Time.deltaTime;
         }
 
-        
+        if(_controller.isGrounded != true)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) && _canWallJump == true)
+            {
+                _direction = _wallSurfaceNormal * _speed;
+
+                if(_direction.x < 0)
+                {
+                    _facing.y = -90;
+                }
+                else
+                {
+                    _facing.y = 90;
+                }
+
+                transform.localEulerAngles = _facing;
+                _anim.SetTrigger("WallJump");
+                _direction.y = _jumpHeight;
+                _canWallJump = false;
+            }
+        }
+
         _controller.Move(_direction * Time.deltaTime);
         
     }
@@ -194,7 +215,13 @@ public class Player : MonoBehaviour
             _anim.SetBool("Pushing", false);
         }
 
-        
+        if(hit.transform.tag == "Wall")
+        {
+            _wallSurfaceNormal = hit.normal;
+            _canWallJump = true;
+            Debug.Log(_canWallJump);
+            Debug.Log(hit.normal);
+        }
     }
 
     private void LadderMovement()
